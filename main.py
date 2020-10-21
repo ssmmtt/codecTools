@@ -15,9 +15,9 @@ from tabview import TabView
 def create_body():
     global body
 
-    toolframe = Frame(body, bg='pink')
+    toolframe = Frame(body)
     toolframe.pack(fill=BOTH, expand=True)
-    gui = MY_GUI(toolframe)
+    gui = ToolsGui(toolframe)
     gui.set_init_window()
 
     return toolframe
@@ -37,7 +37,7 @@ def remove(index):
     #     return False
 
 
-class MY_GUI():
+class ToolsGui():
     def __init__(self, init_window_name):
         self.init_window_name = init_window_name
 
@@ -53,7 +53,7 @@ class MY_GUI():
         # 左侧试图
         self.init_window_name.update()
         print(self.init_window_name.winfo_width())
-        frm1 = Frame(self.init_window_name, bg='red')
+        frm1 = Frame(self.init_window_name)
         frm1.pack(fill=BOTH, side=LEFT, expand=True)
 
         self.init_data_label = Label(frm1, text="待处理数据", font=("宋体", 15, "bold"), height=2, bg='dodgerblue')
@@ -67,39 +67,39 @@ class MY_GUI():
         self.log_data_Text.pack(fill=BOTH, expand=True)
 
         # 中间按钮试图
-        frm2 = Frame(self.init_window_name, bg='black')
+        frm2 = Frame(self.init_window_name)
         frm2.pack(fill=BOTH, side=LEFT, expand=True)
         # md5计算
         self.str_trans_to_md5_button = Button(frm2, text="MD5计算\n（右键点击大写）", bg="limegreen",
-                                              command=self.str_trans_to_md5)  # 调用内部方法  加()为直接调用
+                                              command=self.str_trans_to_md5)
         self.str_trans_to_md5_button.bind('<Button-3>', self.md5_upper_event, add=True)
         self.str_trans_to_md5_button.pack(fill=BOTH, expand=True)
         # base64编码
         self.str_trans_to_bs64_button = Button(frm2, text="base64编码", bg="gold",
-                                               command=self.str_trans_to_bs64)  # 调用内部方法  加()为直接调用
+                                               command=self.str_trans_to_bs64)
         self.str_trans_to_bs64_button.pack(fill=BOTH, expand=True)
         # base64解码
         self.bs64_trans_to_str_button = Button(frm2, text="base64解码", bg="limegreen",
-                                               command=self.bs64_trans_to_str)  # 调用内部方法  加()为直接调用
+                                               command=self.bs64_trans_to_str)
         self.bs64_trans_to_str_button.pack(fill=BOTH, expand=True)
         # url编码
         self.str_trans_to_url_button = Button(frm2, text="URL编码", bg="gold",
-                                              command=self.str_trans_to_url)  # 调用内部方法  加()为直接调用
+                                              command=self.str_trans_to_url)
         self.str_trans_to_url_button.pack(fill=BOTH, expand=True)
         # url解码
         self.url_trans_to_str_button = Button(frm2, text="URL解码", bg="limegreen",
-                                              command=self.url_trans_to_str)  # 调用内部方法  加()为直接调用
+                                              command=self.url_trans_to_str)
         self.url_trans_to_str_button.pack(fill=BOTH, expand=True)
         # unicode转中文
         self.unicode_trans_to_zh_button = Button(frm2, text="Unicode转中文", bg="gold",
-                                                 command=self.unicode_trans_to_zh)  # 调用内部方法  加()为直接调用
+                                                 command=self.unicode_trans_to_zh)
         self.unicode_trans_to_zh_button.pack(fill=BOTH, expand=True)
         # json格式化
         self.str_trans_to_json_button = Button(frm2, text="Json格式化", bg="limegreen",
-                                               command=self.str_trans_to_json)  # 调用内部方法  加()为直接调用
+                                               command=self.str_trans_to_json)
         self.str_trans_to_json_button.pack(fill=BOTH, expand=True)
         # 右侧结果试图
-        frm3 = Frame(self.init_window_name, bg='yellow')
+        frm3 = Frame(self.init_window_name)
         frm3.pack(fill=BOTH, side=RIGHT, expand=True)
         self.result_data_label = Label(frm3, height=2, text="输出结果", font=("宋体", 15, "bold"), bg="dodgerblue")
         self.result_data_label.pack(fill=X)
@@ -115,10 +115,10 @@ class MY_GUI():
             try:
                 myMd5 = hashlib.md5()
                 myMd5.update(src)
-                myMd5_Digest = myMd5.hexdigest()
+                res = myMd5.hexdigest()
                 if upper:
-                    myMd5_Digest = myMd5_Digest.upper()
-                self.write_res_to_text(myMd5_Digest)
+                    res = res.upper()
+                self.write_res_to_text(res)
             except Exception as e:
                 self.result_data_Text.delete(1.0, END)
                 self.write_log_to_text("[ERROR]:%s" % e)
@@ -190,7 +190,7 @@ class MY_GUI():
 
     # 日志动态打印
     def write_log_to_text(self, logmsg):
-        current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+        current_time = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime(time.time()))
         logmsg_in = str(current_time) + logmsg + "\n"  # 换行
         self.log_data_Text.configure(state='normal')
         self.log_data_Text.insert(END, logmsg_in)
@@ -204,9 +204,9 @@ root.geometry("1200x640")
 tab_view = TabView(root, generate_body=create_body,
                    select_listen=select, remove_listen=remove)
 
-toolframe = Frame(tab_view.body, bg='pink')
+toolframe = Frame(tab_view.body)
 toolframe.pack(fill=BOTH, expand=True)
-gui = MY_GUI(toolframe)
+gui = ToolsGui(toolframe)
 gui.set_init_window()
 tab_view.add_tab(toolframe, '编码工具')
 body = tab_view.body
