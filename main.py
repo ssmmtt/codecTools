@@ -3,6 +3,7 @@ import hashlib
 import json
 import time
 import tkinter as tk
+import urllib.parse
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
 
@@ -98,6 +99,10 @@ class ToolsGui():
         self.str_trans_to_json_button = Button(frm2, text="Json格式化", bg="limegreen",
                                                command=self.str_trans_to_json)
         self.str_trans_to_json_button.pack(fill=BOTH, expand=True)
+        # chrome请求头转换
+        self.header_trans_to_json_button = Button(frm2, text="请求头转Json", bg="gold",
+                                                  command=self.header_trans_to_json)
+        self.header_trans_to_json_button.pack(fill=BOTH, expand=True)
         # 右侧结果试图
         frm3 = Frame(self.init_window_name)
         frm3.pack(fill=BOTH, side=RIGHT, expand=True)
@@ -147,36 +152,59 @@ class ToolsGui():
         src = self.init_data_Text.get(0.0, END).strip().encode()
         if src:
             try:
-                pass
+                res = urllib.parse.quote(src)
+                self.write_res_to_text(res)
             except Exception as e:
                 self.result_data_Text.delete(1.0, END)
                 self.write_log_to_text("[ERROR]:%s" % e)
 
     def url_trans_to_str(self):
-        src = self.init_data_Text.get(0.0, END).strip().encode()
+        src = self.init_data_Text.get(0.0, END).strip()
         if src:
             try:
-                pass
+                res = urllib.parse.unquote(src)
+                self.write_res_to_text(res)
             except Exception as e:
                 self.result_data_Text.delete(1.0, END)
                 self.write_log_to_text("[ERROR]:%s" % e)
 
     def unicode_trans_to_zh(self):
-        src = self.init_data_Text.get(0.0, END).strip().encode()
+        src = self.init_data_Text.get(0.0, END).strip()
+        print(src, type(src))
         if src:
             try:
-                pass
+                src = src.replace('\\\\u', '\\u')
+                res = src.encode().decode('unicode_escape')
+                print(res, type(res))
+                self.write_res_to_text(res)
             except Exception as e:
                 self.result_data_Text.delete(1.0, END)
                 self.write_log_to_text("[ERROR]:%s" % e)
 
     def str_trans_to_json(self):
-        src = self.init_data_Text.get(0.0, END).strip().encode()
+        src = self.init_data_Text.get(0.0, END).strip()
         if src:
             try:
                 tmp = json.loads(src)
-                res = json.dumps(tmp, ensure_ascii=False, indent=2)
+                res = json.dumps(tmp, ensure_ascii=False, indent=4)
                 self.write_res_to_text(res)
+            except Exception as e:
+                self.result_data_Text.delete(1.0, END)
+                self.write_log_to_text("[ERROR]:%s" % e)
+
+    def header_trans_to_json(self):
+        src = self.init_data_Text.get(0.0, END).strip()
+        if ': ' in src:
+            try:
+                lines = src.split('\n')
+                h = {}
+                for line in lines:
+                    if line:
+                        l = line.split(': ')
+                        h[l[0]] = l[1]
+                res = json.dumps(h, ensure_ascii=False, indent=4, separators=(',', ': '))
+                self.write_res_to_text(res)
+
             except Exception as e:
                 self.result_data_Text.delete(1.0, END)
                 self.write_log_to_text("[ERROR]:%s" % e)
@@ -212,13 +240,5 @@ tab_view.add_tab(toolframe, '编码工具')
 body = tab_view.body
 
 tab_view.pack(fill=BOTH, expand=True, pady=2)
-# tab_view.add_tab(mainframe, '转换工具')
-
-# # 第一个参数是向body中添加的widget, 第二个参数是tab标题
-# tab_view.add_tab(label_1, "tabs1")
-# tab_view.add_tab(label_2, "tabs2")
-#
-# # TabView需要向x、y方向填充，且expand应设置为yes
-# tab_view.pack(fill="both", expand='yes', pady=2)
 
 root.mainloop()
