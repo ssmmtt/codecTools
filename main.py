@@ -5,10 +5,13 @@ import os
 import time
 import tkinter as tk
 import urllib.parse
+from io import BytesIO
 from tkinter import *
+from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 
 import pyperclip
+from PIL import Image, ImageTk
 
 from tabview import TabView
 
@@ -49,6 +52,7 @@ def remove(index):
 class ToolsGui():
     def __init__(self, init_window_name):
         self.init_window_name = init_window_name
+        self.bs64image = None
 
     def md5_upper_event(self, event):
         self.str_trans_to_md5(True)
@@ -59,7 +63,7 @@ class ToolsGui():
 
     # 设置窗口
     def set_init_window(self):
-        # 左侧试图
+        # 左侧视图
         self.init_window_name.update()
         print(self.init_window_name.winfo_width())
         frm1 = Frame(self.init_window_name)
@@ -107,10 +111,22 @@ class ToolsGui():
         self.str_trans_to_json_button = Button(frm2, text="Json格式化", bg="limegreen",
                                                command=self.str_trans_to_json)
         self.str_trans_to_json_button.pack(fill=BOTH, expand=True)
+
+        # base64转图片
+        self.bs64_trans_to_pic_button = Button(frm2, text="base64转图片", bg="gold",
+                                               command=self.bs64_trans_to_pic)
+        self.bs64_trans_to_pic_button.pack(fill=BOTH, expand=True)
+
+        # 图片转base64
+        self.pic_trans_to_bs64_button = Button(frm2, text="图片转base64", bg="limegreen",
+                                               command=self.pic_trans_to_bs64)
+        self.pic_trans_to_bs64_button.pack(fill=BOTH, expand=True)
+
         # chrome请求头转换
         self.header_trans_to_json_button = Button(frm2, text="请求头转Json", bg="gold",
                                                   command=self.header_trans_to_json)
         self.header_trans_to_json_button.pack(fill=BOTH, expand=True)
+
         # 右侧结果试图
         frm3 = Frame(self.init_window_name)
         frm3.pack(fill=BOTH, side=RIGHT, expand=True)
@@ -118,7 +134,7 @@ class ToolsGui():
         self.result_data_label.pack(fill=X)
         copybtn = Button(self.result_data_label, text='一键复制', command=self.fast_copy)
         copybtn.pack(side=RIGHT)
-        self.result_data_Text = ScrolledText(frm3, width=70, height=49)  # 处理结果展示
+        self.result_data_Text = ScrolledText(frm3)  # 处理结果展示
         self.result_data_Text.pack(fill=BOTH, expand=True)
 
     # 功能函数
@@ -196,6 +212,36 @@ class ToolsGui():
                 tmp = json.loads(src)
                 res = json.dumps(tmp, ensure_ascii=False, indent=4)
                 self.write_res_to_text(res)
+            except Exception as e:
+                self.result_data_Text.delete(1.0, END)
+                self.write_log_to_text("[ERROR]:%s" % e)
+
+    def pic_trans_to_bs64(self):
+        try:
+            picpath = filedialog.askopenfilename(title='选择图片文件',
+                                                 filetypes=[('PNG图片', '*.png'), ('JPG图片', ('*.jpg', '*.jpe', '*.jpeg')),
+                                                            ('BMP图片', '*.bmp'), ('所有文件', '*')])
+            if picpath:
+                self.init_data_Text.delete(1.0, END)
+                self.init_data_Text.insert(1.0, '图片路径：\n' + picpath)
+                with open(picpath, 'rb') as handle:
+                    image_base64 = str(base64.b64encode(handle.read()), encoding='utf-8')
+                    self.write_res_to_text(image_base64)
+        except Exception as e:
+            self.result_data_Text.delete(1.0, END)
+            self.write_log_to_text("[ERROR]:%s" % e)
+
+    def bs64_trans_to_pic(self):
+        src = self.init_data_Text.get(0.0, END).strip()
+        if src:
+            try:
+                binary_data = base64.b64decode(src)
+                # print(binary_data)
+                img_data = BytesIO(binary_data)
+                img_open = Image.open(img_data)
+                self.bs64image = ImageTk.PhotoImage(img_open)
+                self.result_data_Text.delete(1.0, END)
+                self.result_data_Text.image_create(END, image=self.bs64image)
             except Exception as e:
                 self.result_data_Text.delete(1.0, END)
                 self.write_log_to_text("[ERROR]:%s" % e)
