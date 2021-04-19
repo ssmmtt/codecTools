@@ -209,7 +209,7 @@ class ToolsGui():
         src = self.init_data_Text.get(0.0, END).strip()
         if src:
             try:
-                tmp = json.loads(src)
+                tmp = eval(src)
                 res = json.dumps(tmp, ensure_ascii=False, indent=4)
                 self.write_res_to_text(res)
             except Exception as e:
